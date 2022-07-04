@@ -7,6 +7,7 @@
 #include "train.h"
 
 std::mutex busyRailwayTrack;
+std::mutex outputQueue;
 
 void goTrain(Train* train)
 {
@@ -15,14 +16,19 @@ void goTrain(Train* train)
     {
         busyRailwayTrack.unlock();
     }
-    else
+    else 
     {
+        outputQueue.lock();
         std::cout << "    Train " << train->getName() << " is waiting for the release of the track" << std::endl;
+        outputQueue.unlock();
+
     }
+    
         
     busyRailwayTrack.lock();
     std::cout << " Train " << train->getName() << " has arrived at the railway station" << std::endl;
-    std::cout << "Enter \depart\ in order for train " << train->getName() << " to depart" << std::endl;
+    
+    std::cout << "Enter \"depart\" in order for train " << train->getName() << " to depart" << std::endl;
     std::string depart = "";
     while (depart != "depart")
     {
@@ -59,6 +65,6 @@ int main()
         
     for (auto& tr : trainThread)
     {
-        tr.join();
+        if (tr.joinable()) tr.join();
     }    
 }
